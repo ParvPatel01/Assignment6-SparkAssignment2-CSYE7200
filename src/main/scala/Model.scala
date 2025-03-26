@@ -23,12 +23,13 @@ object Model extends App {
   trainDF.printSchema()
   trainDF.show(5)
 
-  println("Describe show")
+  // Exploratory Data Analysis
   trainDF.describe().show()
 
   println("Removing Null Values")
   trainDF.select(trainDF.columns.map(c => sum(when(col(c).isNull, 1).otherwise(0)).alias(c)): _*).show()
 
+  // Feature Engineering
   val df = trainDF
     .withColumn("FamilySize", col("SibSp") + col("Parch") + lit(1))
     .withColumn("IsAlone", when(col("FamilySize") === 1, 1).otherwise(0))
@@ -60,6 +61,8 @@ object Model extends App {
     .setNumTrees(100)
 
   val model = rf.fit(trainingData)
+
+  // Predictions
   val predictions = model.transform(validationData)
   val evaluator = new MulticlassClassificationEvaluator().setLabelCol("Survived").setMetricName("accuracy")
 
